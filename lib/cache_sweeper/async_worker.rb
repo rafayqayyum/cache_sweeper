@@ -8,7 +8,6 @@ module CacheSweeper
     def perform(keys, trigger = :instant)
       start_time = Time.current
       keys_array = Array(keys)
-
       log_job_start(keys_array, trigger)
 
       if defined?(Rails) && Rails.respond_to?(:cache)
@@ -33,14 +32,10 @@ module CacheSweeper
       raise e
     end
 
-    def self.set(opts)
-      self
-    end
-
     def self.perform_async(keys, trigger = :instant)
       if defined?(Sidekiq) && self.ancestors.include?(Sidekiq::Worker)
         log_job_scheduling(keys, :sidekiq, trigger)
-        super(keys, trigger)
+        self.set(sidekiq_opts).super(keys, trigger)
       else
         # In test environment or when Sidekiq is not available, perform synchronously
         log_job_scheduling(keys, :synchronous, trigger)
