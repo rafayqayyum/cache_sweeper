@@ -55,25 +55,16 @@ module CacheSweeper
       request_key = "cache_sweeper_pending_keys_#{sweeper_name}"
       keys = RequestStore.store[request_key]
       if keys&.any?
-        deleted_count = 0
-        failed_count = 0
-
-        keys.each do |key|
-          begin
-            if defined?(Rails) && Rails.respond_to?(:cache)
-              Rails.cache.delete(key)
-              deleted_count += 1
-            else
-              failed_count += 1
-            end
-          rescue => e
-            CacheSweeper::Logger.log_error(e, {
-              key: key,
-              sweeper: sweeper_name,
-              error_type: 'flush_delete_error'
-            })
-            failed_count += 1
-          end
+        if defined?(Rails) && Rails.respond_to?(:cache)
+          deleted_count = CacheSweeper.delete_cache_keys(keys, {
+            sweeper: sweeper_name,
+            mode: :inline,
+            trigger: :request
+          })
+          failed_count = keys.length - deleted_count
+        else
+          deleted_count = 0
+          failed_count = keys.length
         end
 
         CacheSweeper::Logger.log_cache_operations("Flushed request-level keys", :info, {
@@ -91,7 +82,7 @@ module CacheSweeper
       job_keys = RequestStore.store[job_key]
       if job_keys&.any?
         begin
-          CacheSweeper::AsyncWorker.perform_async(job_keys.to_a)
+          CacheSweeper::AsyncWorker.perform_async(job_keys.to_a, :request)
           CacheSweeper::Logger.log_cache_operations("Scheduled async job for pending keys", :info, {
             sweeper: sweeper_name,
             keys_count: job_keys.length,
@@ -325,32 +316,25 @@ module CacheSweeper
           })
         else
           if mode == :async
-            CacheSweeper::AsyncWorker.set(sidekiq_opts).perform_async(keys)
+            CacheSweeper::AsyncWorker.set(sidekiq_opts).perform_async(keys, trigger)
             CacheSweeper::Logger.log_cache_operations("Scheduled async job for: #{Array(keys).inspect}", :info, {
               keys: Array(keys),
               sidekiq_options: sidekiq_opts
             })
           else
-            deleted_count = 0
-            failed_count = 0
-
-            Array(keys).each do |key|
-              begin
-                if defined?(Rails) && Rails.respond_to?(:cache)
-                  Rails.cache.delete(key)
-                  deleted_count += 1
-                  CacheSweeper::Logger.log_cache_operations("Deleted instantly: #{key}", :debug, { key: key })
-                else
-                  CacheSweeper::Logger.log_cache_operations("Rails cache not available for key: #{key}", :warn, { key: key })
-                  failed_count += 1
-                end
-              rescue => e
-                CacheSweeper::Logger.log_error(e, {
-                  key: key,
-                  error_type: 'cache_delete_error'
-                })
-                failed_count += 1
-              end
+            if defined?(Rails) && Rails.respond_to?(:cache)
+              deleted_count = CacheSweeper.delete_cache_keys(keys, {
+                sweeper: sweeper&.name,
+                mode: :inline,
+                trigger: :instant
+              })
+              failed_count = Array(keys).length - deleted_count
+            else
+              CacheSweeper::Logger.log_cache_operations("Rails cache not available for #{Array(keys).length} keys", :warn, {
+                keys: Array(keys)
+              })
+              deleted_count = 0
+              failed_count = Array(keys).length
             end
 
             CacheSweeper::Logger.log_cache_operations("Instant deletion completed", :info, {

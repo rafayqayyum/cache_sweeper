@@ -29,6 +29,8 @@ A flexible, rule-based cache invalidation gem for Rails applications. CacheSweep
 - **Error tracking**: Comprehensive error logging with context and stack traces
 - **Clean model code**: Keep cache logic out of your models
 - **Thread-safe**: Uses RequestStore for reliable multi-threaded operation
+- **Efficient batch deletion**: Uses `Rails.cache.delete_multi` for optimal performance
+- **Configurable batch sizes**: Control how many keys are deleted in each batch
 
 ## Installation
 
@@ -73,6 +75,7 @@ CacheSweeper.trigger = :request        # :instant or :request
 CacheSweeper.mode = :async             # :async or :inline
 CacheSweeper.queue = :low              # Sidekiq queue name
 CacheSweeper.sidekiq_options = { retry: false }
+CacheSweeper.delete_multi_batch_size = 100  # Batch size for efficient cache deletion
 ```
 
 ### 2. Add Middleware (if using request-level batching)
@@ -124,6 +127,7 @@ CacheSweeper.trigger = :request        # :instant or :request
 CacheSweeper.mode = :async             # :async or :inline
 CacheSweeper.queue = :low              # Sidekiq queue name
 CacheSweeper.sidekiq_options = { retry: false }
+CacheSweeper.delete_multi_batch_size = 100  # Batch size for efficient cache deletion
 ```
 
 ### Sweeper-Level Configuration
@@ -167,6 +171,7 @@ Configuration is resolved in this order (highest to lowest priority):
 - **`mode`**: `:async` (use Sidekiq) or `:inline` (synchronous)
 - **`queue`**: Sidekiq queue name (e.g., `:low`, `:high`, `:background`)
 - **`sidekiq_options`**: Hash of Sidekiq options (e.g., `{ retry: false, backtrace: true }`)
+- **`delete_multi_batch_size`**: Number of keys to delete in each batch (default: 100)
 
 ## Usage Examples
 
@@ -537,6 +542,10 @@ bundle exec sidekiq
 - **Use `:async` mode** for high-volume applications to avoid blocking requests
 - **Use `:inline` mode** for low-volume applications or when immediate consistency is required
 - **Monitor Sidekiq queue sizes** to ensure async jobs are being processed
+- **Optimize batch sizes**: Adjust `delete_multi_batch_size` based on your cache store's performance
+  - **Redis**: 100-500 keys per batch works well
+  - **Memcached**: 50-200 keys per batch is optimal
+  - **File store**: 10-50 keys per batch to avoid I/O bottlenecks
 
 ### Memory Usage
 

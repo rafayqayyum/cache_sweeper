@@ -14,6 +14,7 @@ CacheSweeper.configure do |config|
   config.mode = :async             # :async or :inline
   config.queue = :low              # Sidekiq queue name
   config.sidekiq_options = { retry: false }
+  config.delete_multi_batch_size = 100  # Batch size for efficient cache deletion
 end
 name
 
