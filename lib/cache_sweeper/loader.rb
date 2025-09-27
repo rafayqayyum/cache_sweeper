@@ -115,20 +115,18 @@ module CacheSweeper
       })
     end
 
-    def self.load_sweepers
+    def self.load_sweepers!
       Dir[Rails.root.join(SWEEPER_PATH, '**', '*_sweeper.rb')].each { |file| require_dependency file }
     end
 
-    def self.attach_to_models
+    def self.hook_sweepers!
       start_time = Time.current
       CacheSweeper::Logger.log_initialization("Starting model attachment process")
 
       sweeper_count = 0
       rule_count = 0
       error_count = 0
-
       CacheSweeper::Base.descendants.each do |sweeper|
-        next if CacheSweeper.attached_sweepers.include?(sweeper.name)
         sweeper_count += 1
         CacheSweeper::Logger.log_initialization("Processing sweeper: #{sweeper.name}", { sweeper: sweeper.name, rule_count: sweeper.cache_sweeper_rules.length })
 
@@ -196,7 +194,6 @@ module CacheSweeper
             next
           end
         end
-        CacheSweeper.attached_sweepers << sweeper.name
       end
 
       duration = (Time.current - start_time) * 1000
@@ -382,12 +379,6 @@ module CacheSweeper
           error_type: 'cache_invalidation_error'
         })
       end
-    end
-
-
-    def self.ensure_attached
-      load_sweepers
-      attach_to_models
     end
   end
 end
