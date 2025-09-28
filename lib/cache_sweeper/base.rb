@@ -13,6 +13,7 @@ module CacheSweeper
         @mode = options[:mode] if options.key?(:mode)
         @queue = options[:queue] if options.key?(:queue)
         @sidekiq_options = options[:sidekiq_options] if options.key?(:sidekiq_options)
+        CacheSweeper.validate_async_mode(@mode, "sweeper #{self.name}")
       end
 
     end

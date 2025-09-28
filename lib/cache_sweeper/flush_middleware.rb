@@ -34,18 +34,13 @@ class CacheSweeperFlushMiddleware
             async_jobs_scheduled += 1
             log_batch_processing(request_id, keys, :async_scheduled, sidekiq_options)
           else
-            if defined?(Rails) && Rails.respond_to?(:cache)
-              deleted_count = CacheSweeper.delete_cache_keys(keys, {
-                request_id: request_id,
-                mode: :inline,
-                trigger: :request
-              })
-              instant_deletions += deleted_count
-              failed_deletions += Array(keys).length - deleted_count
-            else
-              failed_deletions += Array(keys).length
-              log_batch_processing(request_id, keys, :rails_not_available)
-            end
+            deleted_count = CacheSweeper.delete_cache_keys(keys, {
+              request_id: request_id,
+              mode: :inline,
+              trigger: :request
+            })
+            instant_deletions += deleted_count
+            failed_deletions += Array(keys).length - deleted_count
           end
         rescue => e
           errors << { keys: keys, error: e.message }

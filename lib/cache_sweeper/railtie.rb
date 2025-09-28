@@ -5,6 +5,7 @@ module CacheSweeper
     end
 
     config.after_initialize do
+      CacheSweeper.validate_configuration!
       CacheSweeper::Loader.load_sweepers!
       CacheSweeper::Loader.hook_sweepers!
     end

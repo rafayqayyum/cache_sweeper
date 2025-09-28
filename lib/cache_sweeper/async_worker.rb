@@ -10,18 +10,12 @@ module CacheSweeper
       keys_array = Array(keys)
       log_job_start(keys_array, trigger)
 
-      if defined?(Rails) && Rails.respond_to?(:cache)
-        deleted_count = CacheSweeper.delete_cache_keys(keys_array, {
-          job_id: jid,
-          mode: :async,
-          trigger: trigger
-        })
-        failed_count = keys_array.length - deleted_count
-      else
-        log_cache_deletion(keys_array, :rails_not_available)
-        deleted_count = 0
-        failed_count = keys_array.length
-      end
+      deleted_count = CacheSweeper.delete_cache_keys(keys_array, {
+        job_id: jid,
+        mode: :async,
+        trigger: trigger
+      })
+      failed_count = keys_array.length - deleted_count
 
       duration = (Time.current - start_time) * 1000
       log_job_completion(keys_array, deleted_count, failed_count, duration, [], trigger)

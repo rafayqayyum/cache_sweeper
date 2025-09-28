@@ -7,6 +7,7 @@ module CacheSweeper
 
     module ClassMethods
       def watch(association = nil, attributes: nil, if: nil, keys: nil, trigger: nil, mode: nil, queue: nil, sidekiq_options: nil, callback: nil, on: nil)
+        CacheSweeper.validate_async_mode(mode, "rule in #{self.name}")
         @cache_sweeper_rules ||= []
         @cache_sweeper_rules << {
           association: association,

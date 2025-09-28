@@ -53,43 +53,53 @@ module CacheSweeper
       @attached_sweepers ||= []
     end
 
-    def delete_cache_keys(keys, context = {})
-      return 0 unless defined?(Rails) && Rails.respond_to?(:cache)
-
-      keys_array = Array(keys)
-      return 0 if keys_array.empty?
-
-      batch_size = @delete_multi_batch_size || 100
-      deleted_count = 0
-      failed_count = 0
-
-      keys_array.each_slice(batch_size) do |batch|
-        begin
-          Rails.cache.delete_multi(batch)
-          deleted_count += batch.length
-          CacheSweeper::Logger.log_cache_operations("Deleted batch of #{batch.length} keys", :debug, context.merge({
-            batch_size: batch.length,
-            keys: batch
-          }))
-        rescue => e
-          failed_count += batch.length
-          CacheSweeper::Logger.log_error(e, context.merge({
-            batch_size: batch.length,
-            keys: batch,
-            error_type: 'delete_multi_error'
-          }))
-        end
-      end
-
-      CacheSweeper::Logger.log_cache_operations("Batch deletion completed", :info, context.merge({
-        total_keys: keys_array.length,
-        deleted_count: deleted_count,
-        failed_count: failed_count,
-        batch_size: batch_size
-      }))
-
-      deleted_count
+    def validate_configuration!
+      validate_async_mode(@mode, "global configuration")
     end
+
+    def validate_async_mode(mode, context)
+      if mode == :async && !defined?(Sidekiq)
+        warn "CacheSweeper Warning: #{context} has mode set to :async but Sidekiq is not available. " \
+             "Async jobs will be executed synchronously. " \
+             "Add 'gem \"sidekiq\"' to your Gemfile to enable async processing."
+      end
+    end
+
+  def delete_cache_keys(keys, context = {})
+    keys_array = Array(keys)
+    return 0 if keys_array.empty?
+
+    batch_size = @delete_multi_batch_size || 100
+    deleted_count = 0
+    failed_count = 0
+
+    keys_array.each_slice(batch_size) do |batch|
+      begin
+        Rails.cache.delete_multi(batch)
+        deleted_count += batch.length
+        CacheSweeper::Logger.log_cache_operations("Deleted batch of #{batch.length} keys", :debug, context.merge({
+          batch_size: batch.length,
+          keys: batch
+        }))
+      rescue => e
+        failed_count += batch.length
+        CacheSweeper::Logger.log_error(e, context.merge({
+          batch_size: batch.length,
+          keys: batch,
+          error_type: 'delete_multi_error'
+        }))
+      end
+    end
+
+    CacheSweeper::Logger.log_cache_operations("Batch deletion completed", :info, context.merge({
+      total_keys: keys_array.length,
+      deleted_count: deleted_count,
+      failed_count: failed_count,
+      batch_size: batch_size
+    }))
+
+    deleted_count
+  end
   end
 end
 
