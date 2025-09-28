@@ -577,4 +577,4 @@ MIT License. See [LICENSE.txt](LICENSE.txt) for details.
 
 - [GitHub Repository](https://github.com/rafayqayyum/cache_sweeper)
 - [MIT License](https://opensource.org/licenses/MIT)
-- [RubyGems](https://rubygems.org/gems/cache_sweeper) (when published)
+- [RubyGems](https://rubygems.org/gems/cache_sweeper)
