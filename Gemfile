@@ -8,8 +8,8 @@ gem "rspec", "~> 3.0"
 
 gem "request_store", "~> 1.7"
 
-gem "sidekiq", "~> 6.5"
+gem "sidekiq", "~> 6.0"
 
 group :development, :test do
-  gem 'rails', '>= 7.1.0'
+  gem 'rails', '~> 6.0'
 end
