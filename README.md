@@ -52,12 +52,6 @@ bundle install
 - **Sidekiq**: Required for async cache deletion
 - **RequestStore**: For thread-safe request-level storage
 
-Add Sidekiq to your Gemfile:
-
-```ruby
-gem 'sidekiq'
-gem 'request_store'
-```
 
 ## Quick Start
 
