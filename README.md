@@ -37,7 +37,7 @@ A flexible, rule-based cache invalidation gem for Rails applications. CacheSweep
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'cache_sweeper', path: 'path/to/cache_sweeper'
+gem 'cache_sweeper'
 ```
 
 Then run:
