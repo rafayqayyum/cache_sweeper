@@ -27,17 +27,14 @@ module CacheSweeper
 
     def configure_defaults
       DEFAULTS.each { |k, v| instance_variable_set("@#{k}", v) }
-
-      if defined?(Rails)
-        @log_level =
-          if Rails.env.development?
-            :debug
-          elsif Rails.env.production?
-            :warn
-          else
-            :info
-          end
-      end
+      @log_level =
+        if Rails.env.development?
+          :debug
+        elsif Rails.env.production?
+          :warn
+        else
+          :info
+        end
     end
 
     def log_level=(level)

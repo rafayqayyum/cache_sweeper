@@ -102,11 +102,6 @@ class CacheSweeperFlushMiddleware
         keys: Array(keys),
         sidekiq_options: sidekiq_options
       })
-    when :rails_not_available
-      CacheSweeper::Logger.log_middleware("Rails cache not available", :warn, {
-        request_id: request_id,
-        keys: Array(keys)
-      })
     when :error
       CacheSweeper::Logger.log_error(error, {
         request_id: request_id,

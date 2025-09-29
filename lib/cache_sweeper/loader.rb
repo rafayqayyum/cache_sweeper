@@ -55,17 +55,12 @@ module CacheSweeper
       request_key = "cache_sweeper_pending_keys_#{sweeper_name}"
       keys = RequestStore.store[request_key]
       if keys&.any?
-        if defined?(Rails) && Rails.respond_to?(:cache)
-          deleted_count = CacheSweeper.delete_cache_keys(keys, {
-            sweeper: sweeper_name,
-            mode: :inline,
-            trigger: :request
-          })
-          failed_count = keys.length - deleted_count
-        else
-          deleted_count = 0
-          failed_count = keys.length
-        end
+        deleted_count = CacheSweeper.delete_cache_keys(keys, {
+          sweeper: sweeper_name,
+          mode: :inline,
+          trigger: :request
+        })
+        failed_count = keys.length - deleted_count
 
         CacheSweeper::Logger.log_cache_operations("Flushed request-level keys", :info, {
           sweeper: sweeper_name,
@@ -306,7 +301,7 @@ module CacheSweeper
       })
 
       begin
-        if trigger == :request
+        if trigger == :request && !in_console?
           RequestStore.store[:cache_sweeper_request_pending] ||= []
           RequestStore.store[:cache_sweeper_request_pending] << { keys: keys, mode: mode, sidekiq_options: sidekiq_opts }
           CacheSweeper::Logger.log_cache_operations("Batched for request: #{Array(keys).inspect} (mode: #{mode})", :info, {
@@ -322,20 +317,13 @@ module CacheSweeper
               sidekiq_options: sidekiq_opts
             })
           else
-            if defined?(Rails) && Rails.respond_to?(:cache)
-              deleted_count = CacheSweeper.delete_cache_keys(keys, {
-                sweeper: sweeper&.name,
-                mode: :inline,
-                trigger: :instant
-              })
-              failed_count = Array(keys).length - deleted_count
-            else
-              CacheSweeper::Logger.log_cache_operations("Rails cache not available for #{Array(keys).length} keys", :warn, {
-                keys: Array(keys)
-              })
-              deleted_count = 0
-              failed_count = Array(keys).length
-            end
+
+            deleted_count = CacheSweeper.delete_cache_keys(keys, {
+              sweeper: sweeper&.name,
+              mode: :inline,
+              trigger: :instant
+            })
+            failed_count = Array(keys).length - deleted_count
 
             CacheSweeper::Logger.log_cache_operations("Instant deletion completed", :info, {
               deleted_count: deleted_count,
@@ -363,6 +351,10 @@ module CacheSweeper
           error_type: 'cache_invalidation_error'
         })
       end
+    end
+
+    def self.in_console?
+      defined?(Rails::Console) || Rails.const_defined?('Console')
     end
   end
 end

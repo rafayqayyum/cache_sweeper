@@ -57,13 +57,6 @@ module CacheSweeper
           keys: Array(keys),
           status: 'success'
         })
-      when :rails_not_available
-        CacheSweeper::Logger.log_async_jobs("Rails cache not available for #{Array(keys).length} keys", :warn, {
-          job_id: jid,
-          keys_count: Array(keys).length,
-          keys: Array(keys),
-          status: 'rails_not_available'
-        })
       when :error
         CacheSweeper::Logger.log_error(error, {
           job_id: jid,
