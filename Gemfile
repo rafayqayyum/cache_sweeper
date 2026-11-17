@@ -12,8 +12,8 @@ gem "railties", "~> #{rails_version}.0"
 gem "sqlite3", rails_version == "7.1" ? "~> 1.4" : ">= 2.1"
 
 gem "connection_pool", "< 3" if rails_version.start_with?("7.")
-gem "dalli", "~> 3.2"
-gem "redis", "~> 5.0"
+gem "dalli", "~> 5.3"
+gem "redis", "~> 6.0"
 
 gem "bundler-audit", require: false
 gem "rake", "~> 13.0"
