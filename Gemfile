@@ -1,15 +1,23 @@
+# frozen_string_literal: true
+
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in cache_sweeper.gemspec
 gemspec
 
-gem "rake", "~> 12.0"
-gem "rspec", "~> 3.0"
+rails_version = ENV.fetch("RAILS_VERSION", "8.1")
 
-gem "request_store", "~> 1.7"
+gem "activejob", "~> #{rails_version}.0"
+gem "activerecord", "~> #{rails_version}.0"
+gem "railties", "~> #{rails_version}.0"
+gem "sqlite3", rails_version == "7.1" ? "~> 1.4" : ">= 2.1"
 
-gem "sidekiq", "~> 6.0"
+gem "dalli", "~> 3.2"
+gem "redis", "~> 5.0"
 
-group :development, :test do
-  gem 'rails', '~> 6.0'
-end
+gem "bundler-audit", require: false
+gem "rake", "~> 13.0"
+gem "rspec", "~> 3.13"
+gem "rubocop", "~> 1.70", require: false
+gem "rubocop-rake", require: false
+gem "rubocop-rspec", require: false
+gem "simplecov", "~> 1.3", require: false
