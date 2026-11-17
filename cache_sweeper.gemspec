@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
                      "Deletes inline, batched per request or job, or asynchronously through ActiveJob."
   spec.homepage = "https://github.com/rafayqayyum/cache_sweeper"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2"
+  spec.required_ruby_version = ">= 3.3"
 
   spec.metadata = {
     "source_code_uri" => spec.homepage,

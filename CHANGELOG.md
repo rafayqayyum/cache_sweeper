@@ -14,7 +14,7 @@ Complete rewrite with a new API. Nothing from 0.x is carried over.
 - Sweepers reload with application code in development.
 - Logging moved to `ActiveSupport::Notifications` and a `LogSubscriber`. Errors go to `Rails.error`.
 - Depends on ActiveRecord, ActiveJob and ActiveSupport 7.1+ instead of all of Rails and `request_store`.
-- Requires Ruby 3.2+.
+- Requires Ruby 3.3+.
 
 ## 0.1.1
 

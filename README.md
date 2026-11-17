@@ -28,7 +28,7 @@ end
 
 ## Requirements
 
-- Ruby 3.2+
+- Ruby 3.3+
 - Rails 7.1+ (ActiveRecord, ActiveJob, ActiveSupport)
 
 ## Installation
